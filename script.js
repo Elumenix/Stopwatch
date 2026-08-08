@@ -3,9 +3,11 @@ console.log("Stopwatch")
 let seconds = 0;
 let tens = 0;
 let minutes = 0;
+let hours = 0;
 let getMinutes = document.querySelector('.minutes')
 let getSeconds = document.querySelector('.seconds')
 let getTens = document.querySelector('.tens')
+let getHours = document.querySelector('.hours');
 let btnStart = document.querySelector('.btn-start')
 let btnStop = document.querySelector('.btn-stop')
 let btnReset = document.querySelector('.btn-reset')
@@ -35,12 +37,24 @@ const startTime = () => {
         seconds = 0;
         getSeconds.innerHTML = '0' + 0
     }
+    if (minutes > 9) {
+        getMinutes.innerHTML = minutes;
+    }
+    if (minutes > 59) {
+        hours++;
+        getHours.innerHTML = '0' + hours;
+        minutes = 0;
+        getMinutes.innerHTML = '0' + minutes;
+    }
+    if (hours > 9) {
+        getHours.innerHTML = hours;
+    }
 }
 
 btnStart.addEventListener('click', () => {
     if (!running) {
-        running = true;
-        interval = setInterval(startTime, 10);
+    running = true;
+    interval = setInterval(startTime, 10);
     }
 })
 
@@ -55,7 +69,9 @@ btnReset.addEventListener('click', () => {
     tens = '00';
     seconds = '00';
     minutes = '00';
+    hours = '00';
     getTens.innerHTML = tens;
     getSeconds.innerHTML = seconds;
     getMinutes.innerHTML = minutes;
+    getHours.innerHTML = hours;
 })
