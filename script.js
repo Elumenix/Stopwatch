@@ -1,9 +1,5 @@
 console.log("Stopwatch")
 
-let seconds = 0;
-let tens = 0;
-let minutes = 0;
-let hours = 0;
 let getMinutes = document.querySelector('.minutes')
 let getSeconds = document.querySelector('.seconds')
 let getTens = document.querySelector('.tens')
@@ -13,141 +9,70 @@ let btnStart = document.querySelector('.btn-start')
 let btnStop = document.querySelector('.btn-stop')
 let btnReset = document.querySelector('.btn-reset')
 let btnRev = document.querySelector('.btn-rev');
-let interval;
+
+let startTimestamp = null;
+let elapsedAtPause = 0;
 let running = false;
-let isNegative = false;
+let direction = 1; // 1 = forward, -1 = reverse
+let interval;
 
-const startTime = () => {
-    if (!isNegative) {
-        // Time is already positive, so we just increase
-        tens++;
+const updateDisplay = (totalMs) => {
+    const isNegative = totalMs < 0;
+    const absMs = Math.abs(totalMs);
 
-        if (tens > 99) {
-            seconds++;
-            tens = 0;
-        }
-        if (seconds > 59) {
-            minutes++;
-            seconds = 0;
-        }
-        if (minutes > 59) {
-            hours++;
-            minutes = 0;
-        }
-    }
-    else {
-        // time is negative, so we're decreasing
-        tens--;
-
-        if (tens < 0) {
-            tens = 99;
-            seconds--;
-        }
-        if (seconds < 0) {
-            seconds = 59;
-            minutes--;
-        }
-        if (minutes < 0) {
-            minutes = 59;
-            hours--;
-        }
-        if (hours < 0) {
-            // We're now back in the positive numbers
-            isNegative = false;
-            hours = 0;
-            minutes = 0;
-            seconds = 0;
-            tens = 0;
-        }
-    }
+    const totalCentiseconds = Math.floor(absMs / 10);
+    const tens = totalCentiseconds % 100;
+    const totalSeconds = Math.floor(totalCentiseconds / 100);
+    const seconds = totalSeconds % 60;
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const minutes = totalMinutes % 60;
+    const hours = Math.floor(totalMinutes / 60);
 
     getTens.innerHTML = tens <= 9 ? '0' + tens : tens;
     getSeconds.innerHTML = seconds <= 9 ? '0' + seconds : seconds;
     getMinutes.innerHTML = minutes <= 9 ? '0' + minutes : minutes;
     getHours.innerHTML = hours <= 9 ? '0' + hours : hours;
-
-    // Add/remove the negative sign
-    getSign.innerHTML = isNegative ? '-' : '&nbsp;';
+    getSign.innerHTML = isNegative ? '-' : '';
 }
 
-const startTimeReverse = () => {
-    if (!isNegative) {
-        // Still counting down toward zero
-        tens--;
-
-        if (tens < 0) {
-            tens = 99;
-            seconds--;
-        }
-        if (seconds < 0) {
-            seconds = 59;
-            minutes--;
-        }
-        if (minutes < 0) {
-            minutes = 59;
-            hours--;
-        }
-        if (hours < 0) {
-            // We will now begin counting up
-            isNegative = true;
-            hours = 0;
-            minutes = 0;
-            seconds = 0;
-            tens = 0;
-        }
-    }
-    else {
-        // Counting upwards
-        tens++;
-
-        if (tens > 99) {
-            tens = 0;
-            seconds++;
-        }
-        if (seconds > 59) {
-            seconds = 0;
-            minutes++;
-        }
-        if (minutes > 59) {
-            minutes = 0;
-            hours++;
-        }
-    }
-
-    getTens.innerHTML = tens <= 9 ? '0' + tens : tens;
-    getSeconds.innerHTML = seconds <= 9 ? '0' + seconds : seconds;
-    getMinutes.innerHTML = minutes <= 9 ? '0' + minutes : minutes;
-    getHours.innerHTML = hours <= 9 ? '0' + hours : hours;
-
-    // Add/remove the negative sign
-    getSign.innerHTML = isNegative ? '-' : '&nbsp;';
+const tick = () => {
+    const now = Date.now();
+    const elapsed = elapsedAtPause + direction * (now - startTimestamp);
+    updateDisplay(elapsed);
 }
 
-btnStart.addEventListener('click', () => {
+// Called by both Start and Rev buttons — direction is the only thing that differs
+const beginRunning = (newDirection) => {
     clearInterval(interval);
-    interval = setInterval(startTime, 10);
+
+    if (running) {
+        // fold in whatever time passed under the old direction before switching
+        elapsedAtPause += direction * (Date.now() - startTimestamp);
+    }
+
+    direction = newDirection;
+    startTimestamp = Date.now();
+    interval = setInterval(tick, 10);
     running = true;
-})
+}
+
+btnStart.addEventListener('click', () => beginRunning(1));
+btnRev.addEventListener('click', () => beginRunning(-1));
 
 btnStop.addEventListener('click', () => {
     clearInterval(interval);
+    elapsedAtPause += direction * (Date.now() - startTimestamp);
     running = false;
-})
-
-btnRev.addEventListener('click', () => {
-    clearInterval(interval);
-    interval = setInterval(startTimeReverse, 10);
-    running = true;
 })
 
 btnReset.addEventListener('click', () => {
     running = false;
-    isNegative = false;
+    startTimestamp = null;
+    elapsedAtPause = 0;
+    direction = 1; 
     clearInterval(interval);
-    tens = 0;
-    seconds = 0;
-    minutes = 0;
-    hours = 0;
+
+    // Set timer to default
     getTens.innerHTML = "00";
     getSeconds.innerHTML = "00";
     getMinutes.innerHTML = "00";
