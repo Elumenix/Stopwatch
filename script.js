@@ -1,4 +1,5 @@
 console.log("Stopwatch")
+const STORAGE_KEY = 'ElumenixStopwatch'; // Other sites probably won't use my username as a key
 
 let getMinutes = document.querySelector('.minutes')
 let getSeconds = document.querySelector('.seconds')
@@ -15,6 +16,25 @@ let elapsedAtPause = 0;
 let running = false;
 let direction = 1; // 1 = forward, -1 = reverse
 let interval;
+
+const saveState = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(elapsedAtPause));
+}
+
+const loadState = () => {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    elapsedAtPause = raw ? JSON.parse(raw) : 0;
+    updateDisplay(elapsedAtPause);
+}
+
+const stopTimer = () => {
+    if (running) {
+        clearInterval(interval);
+        elapsedAtPause += direction * (Date.now() - startTimestamp);
+        running = false;
+    }
+    saveState();
+}
 
 const updateDisplay = (totalMs) => {
     const isNegative = totalMs < 0;
@@ -69,7 +89,7 @@ btnReset.addEventListener('click', () => {
     running = false;
     startTimestamp = null;
     elapsedAtPause = 0;
-    direction = 1; 
+    direction = 1;
     clearInterval(interval);
 
     // Set timer to default
@@ -79,3 +99,9 @@ btnReset.addEventListener('click', () => {
     getHours.innerHTML = "00";
     getSign.innerHTML = '&nbsp;';
 })
+
+// Saves on sudden page/window close and saves
+window.addEventListener('pagehide', stopTimer);
+
+// Load timer data from memory
+loadState();
