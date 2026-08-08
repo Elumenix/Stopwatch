@@ -8,70 +8,149 @@ let getMinutes = document.querySelector('.minutes')
 let getSeconds = document.querySelector('.seconds')
 let getTens = document.querySelector('.tens')
 let getHours = document.querySelector('.hours');
+let getSign = document.querySelector('.sign');
 let btnStart = document.querySelector('.btn-start')
 let btnStop = document.querySelector('.btn-stop')
 let btnReset = document.querySelector('.btn-reset')
+let btnRev = document.querySelector('.btn-rev');
 let interval;
 let running = false;
+let isNegative = false;
 
 const startTime = () => {
-    tens++;
-    if (tens <= 9) {
-        getTens.innerHTML = '0' + tens;
+    if (!isNegative) {
+        // Time is already positive, so we just increase
+        tens++;
+
+        if (tens > 99) {
+            seconds++;
+            tens = 0;
+        }
+        if (seconds > 59) {
+            minutes++;
+            seconds = 0;
+        }
+        if (minutes > 59) {
+            hours++;
+            minutes = 0;
+        }
     }
-    if (tens > 9) {
-        getTens.innerHTML = tens;
+    else {
+        // time is negative, so we're decreasing
+        tens--;
+
+        if (tens < 0) {
+            tens = 99;
+            seconds--;
+        }
+        if (seconds < 0) {
+            seconds = 59;
+            minutes--;
+        }
+        if (minutes < 0) {
+            minutes = 59;
+            hours--;
+        }
+        if (hours < 0) {
+            // We're now back in the positive numbers
+            isNegative = false;
+            hours = 0;
+            minutes = 0;
+            seconds = 0;
+            tens = 0;
+        }
     }
-    if (tens > 99) {
-        seconds++;
-        getSeconds.innerHTML = '0' + seconds;
-        tens = 0;
-        getTens.innerHTML = '0' + 0;
+
+    getTens.innerHTML = tens <= 9 ? '0' + tens : tens;
+    getSeconds.innerHTML = seconds <= 9 ? '0' + seconds : seconds;
+    getMinutes.innerHTML = minutes <= 9 ? '0' + minutes : minutes;
+    getHours.innerHTML = hours <= 9 ? '0' + hours : hours;
+
+    // Add/remove the negative sign
+    getSign.innerHTML = isNegative ? '-' : '&nbsp;';
+}
+
+const startTimeReverse = () => {
+    if (!isNegative) {
+        // Still counting down toward zero
+        tens--;
+
+        if (tens < 0) {
+            tens = 99;
+            seconds--;
+        }
+        if (seconds < 0) {
+            seconds = 59;
+            minutes--;
+        }
+        if (minutes < 0) {
+            minutes = 59;
+            hours--;
+        }
+        if (hours < 0) {
+            // We will now begin counting up
+            isNegative = true;
+            hours = 0;
+            minutes = 0;
+            seconds = 0;
+            tens = 0;
+        }
     }
-    if (seconds > 9) {
-        getSeconds.innerHTML = seconds;
+    else {
+        // Counting upwards
+        tens++;
+
+        if (tens > 99) {
+            tens = 0;
+            seconds++;
+        }
+        if (seconds > 59) {
+            seconds = 0;
+            minutes++;
+        }
+        if (minutes > 59) {
+            minutes = 0;
+            hours++;
+        }
     }
-    if (seconds > 59) {
-        minutes++;
-        getMinutes.innerHTML = '0' + minutes;
-        seconds = 0;
-        getSeconds.innerHTML = '0' + 0
-    }
-    if (minutes > 9) {
-        getMinutes.innerHTML = minutes;
-    }
-    if (minutes > 59) {
-        hours++;
-        getHours.innerHTML = '0' + hours;
-        minutes = 0;
-        getMinutes.innerHTML = '0' + minutes;
-    }
-    if (hours > 9) {
-        getHours.innerHTML = hours;
-    }
+
+    getTens.innerHTML = tens <= 9 ? '0' + tens : tens;
+    getSeconds.innerHTML = seconds <= 9 ? '0' + seconds : seconds;
+    getMinutes.innerHTML = minutes <= 9 ? '0' + minutes : minutes;
+    getHours.innerHTML = hours <= 9 ? '0' + hours : hours;
+
+    // Add/remove the negative sign
+    getSign.innerHTML = isNegative ? '-' : '&nbsp;';
 }
 
 btnStart.addEventListener('click', () => {
-    if (!running) {
-    running = true;
+    clearInterval(interval);
     interval = setInterval(startTime, 10);
-    }
+    running = true;
 })
 
 btnStop.addEventListener('click', () => {
-    running = false;
     clearInterval(interval);
+    running = false;
+})
+
+btnRev.addEventListener('click', () => {
+    clearInterval(interval);
+    interval = setInterval(startTimeReverse, 10);
+    running = true;
 })
 
 btnReset.addEventListener('click', () => {
     running = false;
+    isNegative = false;
     clearInterval(interval);
-    tens = '00';
-    seconds = '00';
-    minutes = '00';
-    hours = '00';
-    getTens.innerHTML = tens;
-    getSeconds.innerHTML = seconds;
-    getMinutes.innerHTML = minutes;
-    getHours.innerHTML = hours;
+    tens = 0;
+    seconds = 0;
+    minutes = 0;
+    hours = 0;
+    getTens.innerHTML = "00";
+    getSeconds.innerHTML = "00";
+    getMinutes.innerHTML = "00";
+    getHours.innerHTML = "00";
+    getSign.innerHTML = '&nbsp;';
 })

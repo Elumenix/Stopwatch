@@ -65,7 +65,7 @@
 button {
     background-color: #222242;
     border: 1px solid #a9a9a9;
-    padding: 12px 32px;
+    padding: 12px 12px;
     color: #ffff;
     border-radius: 20px;
     width: 100px;
@@ -73,6 +73,8 @@ button {
     transition: all .2s ease;
     outline: 0;
     cursor: pointer;
+    box-sizing: content-box;
+    text-align: center;
 }
 
 button:hover,
@@ -80,4 +82,18 @@ button:focus {
     color: #f6b400;
     border-color: #f6b400;
     box-shadow: 0px 4px 27px -12px #f6b400;
+}
+
+.sign,
+.pad {
+    display: inline-block;
+    width: 1ch;
+    text-align: right;
+}
+
+.btn-reset {
+    position: absolute;
+    top: 16px;
+    right: 32px;
+    z-index: 1;
 }
